@@ -123,10 +123,46 @@ def print_report(report: VerificationReport) -> None:
 # ── CLI commands ────────────────────────────────────────────────────────
 
 
-@click.group()
-@click.version_option(version="0.2.0")
-def main():
+def _ensure_first_run():
+    """One-time setup: create .env if missing, download Chromium if not installed."""
+    from pathlib import Path
+
+    env_file = Path(".env")
+    env_template = Path(".env.example")
+
+    if not env_file.exists() and env_template.exists():
+        env_file.write_text(env_template.read_text())
+        print("  [!] Created .env from template — edit it with your Discord token")
+        print(f"      {env_file.absolute()}")
+
+    # Check if Chromium is installed; download if missing
+    try:
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as p:
+            try:
+                p.chromium.launch()
+            except Exception:
+                print("  [!] Downloading Chromium browser (one-time, ~150MB)...")
+                import subprocess, sys
+                subprocess.check_call(
+                    [sys.executable, "-m", "playwright", "install", "chromium"],
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                )
+                print("  [OK] Chromium installed")
+    except Exception:
+        pass  # Playwright issues will surface when commands actually run
+
+
+@click.group(invoke_without_command=True)
+@click.version_option(version="1.0.0")
+@click.pass_context
+def main(ctx):
     """SU Member Verifier — Discord membership verification for Swansea Uni societies."""
+    if ctx.invoked_subcommand is None:
+        # No subcommand given — show help
+        click.echo(ctx.get_help())
+        return
+    _ensure_first_run()
 
 
 @main.command()

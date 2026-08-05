@@ -7,7 +7,7 @@ import re
 from dataclasses import dataclass, field
 
 from .scraper import Member
-from .sheets import FormSubmission
+from .csv_reader import FormSubmission
 
 
 @dataclass

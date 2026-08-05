@@ -19,3 +19,9 @@ su_debug_page.html
 .idea/
 responses.csv
 su_members.json
+
+# Build artifacts
+dist/
+build/
+*.spec
+run.py
