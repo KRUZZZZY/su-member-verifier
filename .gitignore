@@ -1,0 +1,21 @@
+# Credentials & secrets
+credentials.json
+su_cookies.json
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Scraper debug
+su_debug_page.html
+
+# IDE
+.vscode/
+.idea/
+responses.csv
+su_members.json
