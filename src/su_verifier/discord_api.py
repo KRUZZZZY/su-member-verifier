@@ -6,6 +6,7 @@ This is lighter weight since we only need role assignment — no event handling.
 
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass
 
 import httpx
@@ -104,12 +105,36 @@ class DiscordRoleAssigner:
     def assign_roles_batch(
         self, usernames: list[tuple[int, str]]
     ) -> list[AssignmentResult]:
-        """Assign roles to multiple users. Each item is (row_number, username)."""
+        """Assign roles to multiple users with rate-limit handling."""
         results: list[AssignmentResult] = []
         for row_number, username in usernames:
             result = self.assign_role(username, row_number)
             results.append(result)
+            if result.success:
+                time.sleep(0.5)  # Rate limit: ~2 role assignments/sec
         return results
+
+    # ── internal helpers ─────────────────────────────────────────────────
+
+    @staticmethod
+    def _request_with_retry(
+        method: str, url: str, headers: dict, **kwargs
+    ) -> httpx.Response:
+        """Make an HTTP request with retry on rate limits (429)."""
+        max_retries = 3
+        response = None
+        for attempt in range(max_retries):
+            with httpx.Client(timeout=30) as client:
+                response = client.request(method, url, headers=headers, **kwargs)
+            if response.status_code != 429:
+                response.raise_for_status()
+                return response
+            retry_after = float(response.headers.get("Retry-After", 1))
+            if attempt < max_retries - 1:
+                time.sleep(retry_after + 1)
+        assert response is not None
+        response.raise_for_status()
+        return response
 
     # ── Discord API calls ───────────────────────────────────────────────
 
