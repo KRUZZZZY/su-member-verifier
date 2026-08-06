@@ -129,16 +129,20 @@ class CSVReader:
     # ── writing ─────────────────────────────────────────────────────────
 
     def mark_verified(self, row_number: int) -> None:
-        """Mark a row as verified in the CSV (writes back to disk)."""
+        """Mark a row as verified. No-op in URL mode (can't write to published sheet)."""
         self._load()
-        row_idx = row_number - 2  # 0-indexed data rows
+        if self._read_only:
+            return
+        row_idx = row_number - 2
         if 0 <= row_idx < len(self._rows):
             self._rows[row_idx][self.col_verified] = "TRUE"
             self._save()
 
     def mark_rejected(self, row_number: int, reason: str = "") -> None:
-        """Mark a row as rejected/not-found in the CSV."""
+        """Mark a row as rejected. No-op in URL mode (can't write to published sheet)."""
         self._load()
+        if self._read_only:
+            return
         row_idx = row_number - 2
         if 0 <= row_idx < len(self._rows):
             value = f"NOT FOUND: {reason}" if reason else "NOT FOUND"

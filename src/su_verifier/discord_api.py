@@ -153,13 +153,13 @@ class DiscordRoleAssigner:
         }
 
         with httpx.Client(timeout=30) as client:
-            response = client.get(
-                url, headers=headers, params={"query": clean_username, "limit": 10}
+            response = self._request_with_retry(
+                "GET", url, headers, params={"query": clean_username, "limit": 10}
             )
-            response.raise_for_status()
             members = response.json()
 
-            # Try exact username match first
+            # Require exact username match — no partial/fallback matching
+            # (false negative = human reviews it; false positive = wrong person gets role)
             for member in members:
                 user = member.get("user", {})
                 if user.get("username", "").lower() == clean_username.lower():
@@ -169,16 +169,6 @@ class DiscordRoleAssigner:
                         discriminator=user.get("discriminator", "0"),
                         nickname=member.get("nick"),
                     )
-
-            # Fall back to partial match
-            if members:
-                user = members[0].get("user", {})
-                return DiscordUser(
-                    id=user.get("id", ""),
-                    username=user.get("username", clean_username),
-                    discriminator=user.get("discriminator", "0"),
-                    nickname=members[0].get("nick"),
-                )
 
             return None
 
@@ -193,8 +183,7 @@ class DiscordRoleAssigner:
         }
 
         with httpx.Client(timeout=30) as client:
-            response = client.put(url, headers=headers)
-            response.raise_for_status()
+            self._request_with_retry("PUT", url, headers)
 
     # ── validation ──────────────────────────────────────────────────────
 

@@ -11,7 +11,7 @@ from .discord_api import DiscordRoleAssigner
 from .scraper import MSLScraper, Member, ScraperResult
 from .verifier import MatchResult, VerificationReport, Verifier
 
-__version__ = "0.2.0"
+__version__ = "1.0.0"
 __all__ = [
     "MSLScraper",
     "Member",
