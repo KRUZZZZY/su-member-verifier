@@ -385,6 +385,9 @@ def run(members_file: str, csv_file: str, dry_run: bool, keep_data: bool, sheets
                 )
                 assigned += 1
             else:
+                reader.mark_rejected(
+                    result.submission.row_number, f"Discord: {discord_result.error}"
+                )
                 console.print(
                     f"  [red]✗[/red] {result.submission.discord_username}: "
                     f"{discord_result.error}"

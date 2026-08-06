@@ -152,25 +152,24 @@ class DiscordRoleAssigner:
             "Content-Type": "application/json",
         }
 
-        with httpx.Client(timeout=30) as client:
-            response = self._request_with_retry(
-                "GET", url, headers, params={"query": clean_username, "limit": 10}
-            )
-            members = response.json()
+        response = DiscordRoleAssigner._request_with_retry(
+            "GET", url, headers, params={"query": clean_username, "limit": 10}
+        )
+        members = response.json()
 
-            # Require exact username match — no partial/fallback matching
-            # (false negative = human reviews it; false positive = wrong person gets role)
-            for member in members:
-                user = member.get("user", {})
-                if user.get("username", "").lower() == clean_username.lower():
-                    return DiscordUser(
-                        id=user["id"],
-                        username=user["username"],
-                        discriminator=user.get("discriminator", "0"),
-                        nickname=member.get("nick"),
-                    )
+        # Require exact username match — no partial/fallback matching
+        # (false negative = human reviews it; false positive = wrong person gets role)
+        for member in members:
+            user = member.get("user", {})
+            if user.get("username", "").lower() == clean_username.lower():
+                return DiscordUser(
+                    id=user["id"],
+                    username=user["username"],
+                    discriminator=user.get("discriminator", "0"),
+                    nickname=member.get("nick"),
+                )
 
-            return None
+        return None
 
     def _add_role(self, user_id: str, role_id: str) -> None:
         """Add a role to a guild member."""
@@ -182,8 +181,7 @@ class DiscordRoleAssigner:
             "Content-Type": "application/json",
         }
 
-        with httpx.Client(timeout=30) as client:
-            self._request_with_retry("PUT", url, headers)
+        DiscordRoleAssigner._request_with_retry("PUT", url, headers)
 
     # ── validation ──────────────────────────────────────────────────────
 
@@ -196,8 +194,7 @@ class DiscordRoleAssigner:
 
         with httpx.Client(timeout=30) as client:
             try:
-                # Check if bot is in the server
-                response = client.get(url, headers=headers)
+                response = DiscordRoleAssigner._request_with_retry("GET", url, headers)
                 if response.status_code == 404:
                     issues.append(
                         "Bot is not in the server. Use the OAuth2 URL Generator "

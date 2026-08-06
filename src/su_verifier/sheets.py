@@ -116,6 +116,8 @@ class SheetsReader:
             # Skip already verified rows
             if verified_raw in ("yes", "true", "1", "verified", "✓", "x"):
                 continue
+            if "not found" in verified_raw:
+                continue
 
             submissions.append(
                 FormSubmission(

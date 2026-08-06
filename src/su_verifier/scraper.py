@@ -215,7 +215,8 @@ class MSLScraper:
                 or "/sso/" in url
             )
             if on_su_domain and not is_auth_page:
-                print(f"  ✓ Login detected! Current URL: {url}")
+                host = urlparse(url).hostname or url
+                print(f"  ✓ Login detected! (host: {host})")
                 break
             await asyncio.sleep(1)
         else:
