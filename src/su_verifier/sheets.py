@@ -18,23 +18,9 @@ from pathlib import Path
 from typing import Optional
 
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 
 
-@dataclass
-class FormSubmission:
-    """A single form submission row from the sheet."""
-
-    row_number: int
-    discord_username: str
-    student_email: str
-    student_id: str
-    verified: bool = False
-    raw_row: dict = None
-
-    def __post_init__(self):
-        if self.raw_row is None:
-            self.raw_row = {}
+from .csv_reader import FormSubmission  # canonical definition, shared with verifier
 
 
 class SheetsReader:

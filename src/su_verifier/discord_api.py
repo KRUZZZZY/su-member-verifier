@@ -207,7 +207,9 @@ class DiscordRoleAssigner:
                 elif response.status_code == 200:
                     # Check role hierarchy
                     guild_url = f"{self.API_BASE}/guilds/{self.guild_id}"
-                    guild_resp = client.get(guild_url, headers=headers)
+                    guild_resp = DiscordRoleAssigner._request_with_retry(
+                        "GET", guild_url, headers
+                    )
                     if guild_resp.status_code == 200:
                         guild_data = guild_resp.json()
                         roles = guild_data.get("roles", [])
